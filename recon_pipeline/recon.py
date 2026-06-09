@@ -1,5 +1,6 @@
 import argparse
 
+from core.aggregate import Aggregate
 from core.loader import load_hosts
 from core.output import write_json
 
@@ -71,6 +72,9 @@ def main():
 
     technologies = AnalyzeTechnologies().run(live_hosts)
     write_json(f"{args.output}/technologies.json", technologies)
+
+    assets = Aggregate().run(args.output)
+    write_json(f"{args.output}/assets.json", assets)
 
 if __name__ == "__main__":
     main()

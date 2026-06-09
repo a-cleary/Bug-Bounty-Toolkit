@@ -2,11 +2,15 @@
 
 import argparse
 
+# Generic functions
 from core.collector import collect
 from core.loader import load_domains
 from core.exclusions import apply_exclusions
 from core.output import write_result
 
+# Tool modules
+#   RunXYZ runs a tool as a subprocess
+#   CallXYZ reaches out to a public API
 from modules.subfinder import RunSubfinder
 from modules.assetfinder import RunAssetfinder
 from modules.amass import RunAmass
@@ -42,6 +46,8 @@ def main():
         exclusions = load_domains(args.exclude)
         if exclusions:
             results = apply_exclusions(results, exclusions)
+
+    # Enumerate wildcards, add in known subdomains, remove the excluded out of scope domains
     write_result(args.output, results)
 
 

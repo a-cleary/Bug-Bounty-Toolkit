@@ -2,6 +2,7 @@
 
 set -euo pipefail
 
+# Quick check if the script is ran corretly
 if [[ $# -ne 1 ]]; then
     echo "Usage: $0 <target>"
     exit 1
@@ -20,6 +21,7 @@ required=(
     katana
 )
 
+# Deps check
 for tool in "${required[@]}"; do
     if ! command -v "$tool" >/dev/null 2>&1; then
         echo "[!] Missing dependency: $tool"
@@ -27,6 +29,7 @@ for tool in "${required[@]}"; do
     fi
 done
 
+# Create folder structure / necessary files
 TARGET="$1"
 PROJECT_DIR="$PWD/$TARGET"
 INPUT_DIR="$PROJECT_DIR/input"
@@ -47,9 +50,14 @@ mkdir -p "$RECON_DIR/nmap"
 touch "$INPUT_DIR/wildcards.txt"
 touch "$INPUT_DIR/known_subdomains.txt"
 touch "$INPUT_DIR/excluded_domains.txt"
+
+# These aren't _required_ but notes and a place to note test creds may be nice
 touch "$PROJECT_DIR/notes.txt"
 touch "$PROJECT_DIR/credentials.txt"
 
+# If wildcards is empty, populate them
+#   If you have wildcards: re-run
+#   Else: Run the recon_pipeline/recon.py script directly as shown below 
 if [[ ! -s "$INPUT_DIR/wildcards.txt" ]]; then
     echo
     echo "[+] Created workspace:"
@@ -63,6 +71,7 @@ if [[ ! -s "$INPUT_DIR/wildcards.txt" ]]; then
     exit 0
 fi
 
+# Scanning and enumeration starts here
 echo "[*] Target: $TARGET"
 echo "[*] Running subdomain enumeration..."
 python3 "$TOOL_DIR/subdomain_enumeration/sub_enum.py" \
@@ -82,5 +91,6 @@ END=$(date +%s)
 echo
 echo "[+] Results:"
 echo "    $PROJECT_DIR"
+echo "    Check ${RECON_DIR}/assets.json for aggregated scan data"
 echo
 echo "[+] Runtime: $((END - START)) seconds"

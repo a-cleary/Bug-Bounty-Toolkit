@@ -40,5 +40,5 @@ class RunGowitness:
                 "--screenshot-path",
                 str(screenshot_dir)
             ],
-            timeout=3600
+            timeout=None
         )

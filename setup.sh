@@ -19,6 +19,10 @@ required=(
     nmap
     gowitness
     katana
+    waybackurls
+    gau
+    unfurl
+    jq
 )
 
 # Deps check
@@ -35,6 +39,7 @@ PROJECT_DIR="$PWD/$TARGET"
 INPUT_DIR="$PROJECT_DIR/input"
 SUBDOMAIN_DIR="$PROJECT_DIR/subdomains"
 RECON_DIR="$PROJECT_DIR/recon"
+HISTORICAL_DIR="$PROJECT_DIR/historical"
 TOOL_DIR="$HOME/Bug-Bounty-Toolkit"
 
 if [[ ! -d "$TOOL_DIR" ]]; then
@@ -47,6 +52,7 @@ mkdir -p "$INPUT_DIR"
 mkdir -p "$SUBDOMAIN_DIR"
 mkdir -p "$RECON_DIR/screenshots"
 mkdir -p "$RECON_DIR/nmap"
+mkdir -p "$HISTORICAL_DIR"
 touch "$INPUT_DIR/wildcards.txt"
 touch "$INPUT_DIR/known_subdomains.txt"
 touch "$INPUT_DIR/excluded_domains.txt"
@@ -86,6 +92,10 @@ python3 "$TOOL_DIR/recon_pipeline/recon.py" \
     --input "$SUBDOMAIN_DIR/subdomains.txt" \
     --output "$RECON_DIR"
 echo "[+] Recon complete"
+
+echo "[*] Performing historical analysis..."
+bash "$TOOL_DIR/historical_analysis/historical.sh" "$SUBDOMAIN_DIR/subdomains.txt" "$HISTORICAL_DIR"
+echo "[+] Historical analysis complete"
 END=$(date +%s)
 
 echo

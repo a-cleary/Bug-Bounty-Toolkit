@@ -8,7 +8,7 @@ Run the `setup.sh` script. This will populate the required files and folder stru
 
 2. Do you not have wildcard domains?
 
-Run the `setup.sh` script only once - then run the `recon_pipeline/recon.py` script to avoid subdomain enumeration.
+Run the `setup.sh` script only once - then run the `recon_pipeline/recon.py` and `historical_analysis/historical.sh` scripts to avoid subdomain enumeration.
 
 
 ## Script Documentation
@@ -29,6 +29,11 @@ python3 recon_pipeline/recon.py \
     --output output_dir/
 ```
 
+__Historical Analysis__
+```bash
+./historical_analysis/historical.sh subdomain_list.txt output_dir/
+```
+
 
 ## Tools Used
 
@@ -40,3 +45,7 @@ python3 recon_pipeline/recon.py \
 - nmap
 - gowitness
 - katana
+- waybackurls
+- gau
+- unfurl
+- jq

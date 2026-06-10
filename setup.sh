@@ -94,7 +94,7 @@ python3 "$TOOL_DIR/recon_pipeline/recon.py" \
 echo "[+] Recon complete"
 
 echo "[*] Performing historical analysis..."
-bash "$TOOL_DIR/historical_analysis/historical.sh" "$SUBDOMAIN_DIR/subdomains.txt" "$HISTORICAL_DIR"
+bash "$TOOL_DIR/historical_analysis/historical.sh" "$RECON_DIR/live_hosts.json" "$HISTORICAL_DIR"
 echo "[+] Historical analysis complete"
 END=$(date +%s)
 

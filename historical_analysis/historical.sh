@@ -4,7 +4,7 @@ set -euo pipefail
 
 # Check for correct usage
 if [[ $# -ne 2 ]]; then
-    echo "Usage: $0 <subdomains.txt> <output_dir>"
+    echo "Usage: $0 <live_hosts.json> <output_dir>"
     exit 1
 fi
 
@@ -25,9 +25,9 @@ SUMMARY="$OUTPUT/analysis.json"
 
 # Fetching from sources
 echo "[*] Running waybackurls..."
-waybackurls < "$INPUT" | sort -u > "$WAYBACK"
+cat "$INPUT" | jq '.[].host' | tr -d '"' | waybackurls | sort -u > "$WAYBACK"
 echo "[*] Running gau..."
-gau --threads 20 < "$INPUT" | sort -u > "$GAU"
+cat "$INPUT" | jq '.[].host' | tr -d '"' | gau --threads 20 | sort -u > "$GAU"
 
 # Combine into a single list
 echo "[*] Merging results..."

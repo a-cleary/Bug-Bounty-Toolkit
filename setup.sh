@@ -2,16 +2,16 @@
 
 set -euo pipefail
 
-########################################
-# Informational Files
-########################################
+#######################
+# Informational Files #
+#######################
 touch \
     notes.txt
     credentials.txt
 
-########################################
-# Directories
-########################################
+###############
+# Directories #
+###############
 
 mkdir -p \
     scope \
@@ -21,18 +21,18 @@ mkdir -p \
     findings \
     repos \
 
-########################################
-# Scope Files
-########################################
+###############
+# Scope Files #
+###############
 
 touch \
     scope/wildcard_domains.txt \
     scope/known_subdomains.txt \
     scope/out_of_scope.txt
 
-########################################
-# Discovery Files
-########################################
+###################
+# Discovery Files #
+###################
 
 touch \
     discovery/enum_results.txt \
@@ -41,9 +41,9 @@ touch \
     discovery/live_hosts.txt \
     discovery/live_hosts.json
 
-########################################
-# Content Files
-########################################
+#################
+# Content Files #
+#################
 
 touch \
     content/gau.txt \
@@ -66,9 +66,9 @@ touch \
     content/git_repos.txt \
     content/git_secrets.txt
 
-########################################
-# Enrichment Files
-########################################
+####################
+# Enrichment Files #
+####################
 
 mkdir -p enrichment/screenshots
 
@@ -77,9 +77,9 @@ touch \
     enrichment/waf.json \
     enrichment/interesting_hosts.txt
 
-########################################
-# Findings Files
-########################################
+##################
+# Findings Files #
+##################
 
 touch \
     findings/nuclei.jsonl \
@@ -88,10 +88,56 @@ touch \
     findings/graphql.txt \
     findings/exposed_panels.txt
 
+############################
+# Cloud and Infrastructure #
+############################
 
-########################################
-# Success Message
-########################################
+touch \
+    cloud/cloud_assets.txt \
+    cloud/storage.txt \
+    cloud/aws/aws.txt \
+    cloud/azure/azure.txt \
+    cloud/gcp/gcp.txt
+
+touch \
+    infrastructure/dns/mx.txt \
+    infrastructure/dns/txt.txt \
+    infrastructure/dns/ns.txt \
+    infrastructure/dns/caa.txt
+
+touch \
+    infrastructure/email/spf.txt \
+    infrastructure/email/dmarc.txt
+
+touch \
+    infrastructure/asn/asn.txt \
+    infrastructure/asn/netblocks.txt
+
+touch \
+    infrastructure/identity/identity.txt \
+    infrastructure/developer/developer_tools.txt \
+    infrastructure/monitoring/monitoring.txt
+
+
+#############
+# ASN Files #
+#############
+
+mkdir -p asn
+
+touch \
+    asn/ips.txt \
+    asn/asns.txt \
+    asn/netblocks.txt \
+    asn/ptr.txt \
+    asn/discovered_hosts.txt \
+    asn/interesting_hosts.txt \
+    asn/live_hosts.txt
+
+
+###################
+# Success Message #
+###################
 
 cat <<EOF
 

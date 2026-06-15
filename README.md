@@ -175,6 +175,18 @@ Contains:
 
 ---
 
+### 5. Other Addional Next Steps
+
+> _`recon.sh` must first be ran to collect the data passively_
+
+Other Enumeration Options:
+
+* Cloud: `cloud.sh` finds various cloud assets such as AWS, Azure, GCP, and Storage assets.
+* Infrastructure: `infrastructure.sh` finds DNS records and hosts pertaining to identity, development, and monitoring.
+* ASN: `asn.sh` finds IP ranges, CIDRs, and ASNs to assist in deeper enumeration.
+
+---
+
 ## Disclaimer
 
 This project is intended for authorized security testing, bug bounty programs, and defensive security research only.

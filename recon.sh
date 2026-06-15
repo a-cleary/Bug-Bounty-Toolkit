@@ -149,7 +149,7 @@ check_repositories() {
 ####################
 normalize_scope_files() {
     info "Normalizing scope files"
-    for file in "$WILDCARD_DOMAINS", "$KNOWN_SUBDOMAINS", "OUT_OF_SCOPE"
+    for file in "$WILDCARD_DOMAINS", "$KNOWN_SUBDOMAINS", "$OUT_OF_SCOPE"
     do
         [[ ! -f "$file" ]] && continue
         grep -v '^#' "$file" | sed '/^\s*$/d' | tr '[:upper:]' '[:lower:]' | sort > "${file}.tmp"

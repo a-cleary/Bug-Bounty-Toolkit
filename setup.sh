@@ -3,6 +3,13 @@
 set -euo pipefail
 
 ########################################
+# Informational Files
+########################################
+touch \
+    notes.txt
+    credentials.txt
+
+########################################
 # Directories
 ########################################
 
@@ -106,6 +113,11 @@ Populate:
   scope/wildcard_domains.txt
   scope/known_subdomains.txt
   scope/out_of_scope.txt
+
+Information Files for Convinience:
+
+  notes.txt - Store any type of information about the program
+  credentials.txt - Store any type of created user accounts
 
 Then run:
 

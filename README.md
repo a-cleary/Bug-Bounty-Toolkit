@@ -184,6 +184,8 @@ Other Enumeration Options:
 * Cloud: `cloud.sh` finds various cloud assets such as AWS, Azure, GCP, and Storage assets.
 * Infrastructure: `infrastructure.sh` finds DNS records and hosts pertaining to identity, development, and monitoring.
 * ASN: `asn.sh` finds IP ranges, CIDRs, and ASNs to assist in deeper enumeration.
+* APIs: `api.sh` does a more in-depth discovery for things such as openapi documentation and swagger docs.
+* Secrets: `secrets.sh` does a deeper regex-based check to pick out more specific types of secrets.
 
 ---
 

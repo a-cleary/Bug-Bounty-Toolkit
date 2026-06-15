@@ -135,6 +135,36 @@ touch \
     asn/live_hosts.txt
 
 
+#############
+# API Files #
+#############
+mkdir -p api
+
+touch \
+    api/graphql.txt \
+    api/swagger.txt \
+    api/openapi.txt \
+    api/postman.txt \
+    api/api_hosts.txt \
+    api/endpoints.txt \
+    api/live_endpoints.txt
+
+
+#################
+# Secrets Files #
+#################
+mkdir -p secrets
+
+touch \
+    secrets/aws.txt \
+    secrets/github.txt \
+    secrets/slack.txt \
+    secrets/jwt.txt \
+    secrets/generic.txt \
+    secrets/urls.txt \
+    secrets/summary.txt
+
+
 ###################
 # Success Message #
 ###################

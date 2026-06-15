@@ -17,7 +17,7 @@ SCREENSHOT_DIR="${ENRICHMENT_DIR}/screenshots"
 FINDINGS_DIR="${BASE_DIR}/findings"
 
 WILDCARD_DOMAINS="${SCOPE_DIR}/wildcard_domains.txt"
-KNOWN_SUBDOMAINS="${SCOPE_DIR}/known_domains.txt"
+KNOWN_SUBDOMAINS="${SCOPE_DIR}/known_subdomains.txt"
 OUT_OF_SCOPE="${SCOPE_DIR}/out_of_scope.txt"
 
 ENUM_RESULTS="${DISCOVERY_DIR}/enum_results.txt"

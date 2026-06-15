@@ -13,7 +13,6 @@ mkdir -p \
     enrichment \
     findings \
     repos \
-    tools
 
 ########################################
 # Scope Files

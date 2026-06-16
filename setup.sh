@@ -6,7 +6,7 @@ set -euo pipefail
 # Informational Files #
 #######################
 touch \
-    notes.txt
+    notes.txt \
     credentials.txt
 
 ###############
@@ -91,6 +91,16 @@ touch \
 ############################
 # Cloud and Infrastructure #
 ############################
+mkdir -p \
+    cloud/aws \
+    cloud/azure \
+    cloud/gcp \
+    infrastructure/dns \
+    infrastructure/email \
+    infrastructure/asn \
+    infrastructure/identity \
+    infrastructure/developer \
+    infrastructure/monitoring
 
 touch \
     cloud/cloud_assets.txt \
@@ -122,7 +132,6 @@ touch \
 #############
 # ASN Files #
 #############
-
 mkdir -p asn
 
 touch \
@@ -198,6 +207,14 @@ Information Files for Convinience:
 Then run:
 
   ./recon.sh
+
+After initial recon consider other modules
+
+  ./cloud.sh
+  ./infrastructure.sh
+  ./asn.sh
+  ./api.sh
+  ./secrets.sh
 
 =========================================
 

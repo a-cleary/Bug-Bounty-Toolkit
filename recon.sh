@@ -330,11 +330,10 @@ run_linkfinder() {
     xargs -a "$JS_FILES" \
         -P "${MAX_JS_WORKERS:-5}" \
         -I{} \
-        sh -c 'python3 "$0" -i "$1" -o cli 2>/dev/null || true' \
-        "$LINKFINDER" \
-        {} \
-        >> "$LINKFINDER_RAW"
-
+        python3 "$LINKFINDER" -i "{}" -o cli \
+        >> "$LINKFINDER_RAW" \
+        2>/dev/null || warn "Some LinkFinder executions failed"
+        
     sort -u "$LINKFINDER_RAW" > "$JS_ENDPOINTS"
     success "$(count_lines "$JS_ENDPOINTS") endpoints discovered"
 }

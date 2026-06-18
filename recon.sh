@@ -65,6 +65,7 @@ GRAPHQL_HOSTS="${FINDINGS_DIR}/graphql.txt"
 EXPOSED_PANELS="${FINDINGS_DIR}/exposed_panels.txt"
 
 MAX_PARALLEL_DOMAINS=5
+MAX_JS_WORKERS=$(( $(nproc) * 2 ))
 
 LINKFINDER="${TOOLS_DIR}/LinkFinder/linkfinder.py"
 SECRETFINDER="${TOOLS_DIR}/SecretFinder/SecretFinder.py"
@@ -80,16 +81,30 @@ mkdir -p "$FINDINGS_DIR"
 ###########
 # Logging #
 ###########
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+timestamp() {
+    date '+%H:%M:%S'
+}
+
 info() {
-    printf '[*] %s\n' "$1"
+    printf '%b[%s INFO]%b %s\n' "$BLUE" "$(timestamp)" "$NC" "$1"
 }
 
 success() {
-    printf '[+] %s\n' "$1"
+    printf '%b[%s OK]%b %s\n' "$GREEN" "$(timestamp)" "$NC" "$1"
+}
+
+warn() {
+    printf '%b[%s WARN]%b %s\n' "$YELLOW" "$(timestamp)" "$NC" "$1"
 }
 
 error() {
-    printf '[-] %s\n' "$1"
+    printf '%b[%s FAIL]%b %s\n' "$RED" "$(timestamp)" "$NC" "$1"
 }
 
 
@@ -237,6 +252,11 @@ validate_hosts() {
     info "Validating live hosts"
     httpx -l "$FINAL_SUBDOMAINS" -json -silent -title -tech-detect -status-code -follow-redirects > "$HTTPX_JSON"
     jq -r '.url' "$HTTPX_JSON" > "$LIVE_HOSTS"
+    if [[ ! -s "$LIVE_HOSTS" ]]
+    then 
+        warn "No live hosts discovered"
+        return
+    fi 
     success "$(wc -l < "$LIVE_HOSTS") live hosts found"
 }
 
@@ -260,7 +280,7 @@ collect_historical_urls() {
 #######################
 collect_live_urls() {
     info "Running katana"
-    katana -list "$LIVE_HOSTS" -silent -jc -kf > "$KATANA_URLS"
+    katana -list "$LIVE_HOSTS" -silent -jc -crawl-duration 10m -timeout 10 > "$KATANA_URLS"
     success "$(wc -l < "$KATANA_URLS") URLs discovered via crawling"
 }
 
@@ -272,6 +292,11 @@ build_url_inventory() {
     info "Building URL inventory"
     cat "$HISTORICAL_URLS" "$KATANA_URLS" | sed '/^\s*$/d' | sort -u > "$ALL_URLS"
     success "$(wc -l < "$ALL_URLS") unique URLs"
+    url_count=$(wc -l < "$ALL_URLS")
+    if (( url_count > 1000 ))
+    then 
+        warn "Large crawl result (${url_count} URLs), later phases may take significant time"
+    fi 
 }
 
 extract_parameters() {
@@ -282,10 +307,10 @@ extract_parameters() {
 
 generate_candidates() {
     info "Generating candidate URLs"
-    gf xss < "$ALL_URLS" > "$XSS_CANDIDATES" || true
-    gf sqli < "$ALL_URLS" > "$SQLI_CANDIDATES" || true
-    gf ssrf < "$ALL_URLS" > "$SSRF_CANDIDATES" || true
-    gf redirect < "$ALL_URLS" > "$REDIRECT_CANDIDATES" || true
+    gf xss < "$ALL_URLS" > "$XSS_CANDIDATES" || warn "gf pattern 'xss' not found"
+    gf sqli < "$ALL_URLS" > "$SQLI_CANDIDATES" || warn "gf pattern 'sqli' not found"
+    gf ssrf < "$ALL_URLS" > "$SSRF_CANDIDATES" || warn "gf pattern 'ssrf' not found"
+    gf redirect < "$ALL_URLS" > "$REDIRECT_CANDIDATES" || warn "gf pattern 'redirect' not found"
     success "Candidate generation complete"
 }
 
@@ -302,7 +327,14 @@ extract_javascript() {
 run_linkfinder() {
     info "Running LinkFinder"
     : > "$LINKFINDER_RAW"
-    cat "$JS_FILES" | xargs -P "$MAX_JS_WORKERS" -I{} python3 "$LINKFINDER" -i "{}" -o cli 2>/dev/null >> "$LINKFINDER_RAW"
+    xargs -a "$JS_FILES" \
+        -P "${MAX_JS_WORKERS:-5}" \
+        -I{} \
+        sh -c 'python3 "$0" -i "$1" -o cli 2>/dev/null || true' \
+        "$LINKFINDER" \
+        {} \
+        >> "$LINKFINDER_RAW"
+
     sort -u "$LINKFINDER_RAW" > "$JS_ENDPOINTS"
     success "$(count_lines "$JS_ENDPOINTS") endpoints discovered"
 }
@@ -310,7 +342,13 @@ run_linkfinder() {
 run_secretfinder() {
     info "Running SecretFinder"
     : > "$SECRETFINDER_RAW"
-    cat "$JS_FILES" | xargs -P "$MAX_JS_WORKERS" -I{} python3 "$SECRETFINDER" -i "{}" -o cli 2>/dev/null >> "$SECRETFINDER_RAW"
+    xargs -a "$JS_FILES" \
+        -P "${MAX_JS_WORKERS:-5}" \
+        -I{} \
+        python3 "$SECRETFINDER" -i "{}" -o cli \
+        >> "$SECRETFINDER_RAW" \
+        2>/dev/null || warn "Some SecretFinder executions failed"
+
     sort -u "$SECRETFINDER_RAW" > "$JS_SECRETS"
     success "$(count_lines "$JS_SECRETS") potential secrets identified"
 }

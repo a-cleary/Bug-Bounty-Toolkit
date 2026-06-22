@@ -194,6 +194,7 @@ touch \
 mkdir -p ports
 
 touch \
+    ports/naabu_targets.txt \
     ports/open_ports.txt \
     ports/open_ports.json \
     ports/nmap.txt
@@ -234,7 +235,6 @@ Then run:
   ./recon.sh
 
 After initial recon consider modules/ for more specific recon tasks
-
 
 =========================================
 

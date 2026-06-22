@@ -179,7 +179,7 @@ Contains:
 
 > _`recon.sh` must first be ran to collect the data passively_
 
-Other Enumeration Options:
+Other Enumeration Options in the `modules/` folder:
 
 * Cloud: `cloud.sh` finds various cloud assets such as AWS, Azure, GCP, and Storage assets.
 * Infrastructure: `infrastructure.sh` finds DNS records and hosts pertaining to identity, development, and monitoring.

@@ -12,6 +12,8 @@ LIVE_HOSTS="discovery/live_hosts.txt"
 OPEN_PORTS="${PORTS_DIR}/open_ports.txt"
 OPEN_PORTS_JSON="${PORTS_DIR}/open_ports.json"
 
+NAABU_TARGETS="${PORTS_DIR}/naabu_targets.txt"
+
 NMAP_RESULTS="${PORTS_DIR}/nmap.txt"
 
 TOP_PORTS=1000
@@ -74,9 +76,18 @@ check_requirements() {
 ###############
 # Naabu Scan #
 ###############
+normalize_hosts() {
+    awk '
+    {
+        gsub(/^https?:\/\//, "", $0)
+        gsub(/\/.*$/, "", $0)
+        print $0
+    }' "$LIVE_HOSTS" | sort -u > "$NAABU_TARGETS"
+}
+
 run_naabu() {
     info "Running naabu"
-    naabu -list "$LIVE_HOSTS" -top-ports "$TOP_PORTS" -json -silent > "$OPEN_PORTS_JSON" || true
+    naabu -list "$NAABU_TARGETS" -top-ports "$TOP_PORTS" -json -silent > "$OPEN_PORTS_JSON" || true
     jq -r '.host + ":" + (.port|tostring)' "$OPEN_PORTS_JSON" 2>/dev/null | sort -u > "$OPEN_PORTS"
 
     success "$(count_lines "$OPEN_PORTS") open ports discovered"
@@ -92,7 +103,7 @@ run_nmap() {
         warn "No open ports discovered"
         return
     }
-    awk -F: '{print $1}' "$OPEN_PORTS" | sort -u | nmap -sV -Pn -iL - -oN "$NMAP_RESULTS" >/dev/null 2>&1 || true
+    awk -F: '{print $1}' "$OPEN_PORTS" | sort -u | nmap -sV -sC -Pn -iL - -oN "$NMAP_RESULTS" >/dev/null 2>&1 || true
 
     success "Nmap service detection completed"
 }
@@ -114,8 +125,8 @@ summary() {
 # Main #
 ########
 main() {
-    mkdir -p "$PORTS_DIR"
     check_requirements
+    normalize_hosts
     run_naabu
     run_nmap
     summary

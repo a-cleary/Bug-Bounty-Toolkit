@@ -233,15 +233,8 @@ Then run:
 
   ./recon.sh
 
-After initial recon consider other modules
+After initial recon consider modules/ for more specific recon tasks
 
-  ./cloud.sh
-  ./infrastructure.sh
-  ./asn.sh
-  ./api.sh
-  ./secrets.sh
-  ./takeover.sh
-  ./ports.sh
 
 =========================================
 

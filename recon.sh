@@ -54,6 +54,8 @@ EXPANDED_URLS="${CONTENT_DIR}/expanded_urls.txt"
 GIT_CANDIDATES="${CONTENT_DIR}/git_candidates.txt"
 GIT_REPOS="${CONTENT_DIR}/git_repos.txt"
 GIT_SECRETS="${CONTENT_DIR}/git_secrets.txt"
+GIT_URLS="${CONTENT_DIR}/git_urls.txt"
+GIT_JSON="${CONTENT_DIR}/git_candidates.json"
 
 TECH_JSON="${ENRICHMENT_DIR}/technologies.json"
 WAF_JSON="${ENRICHMENT_DIR}/waf.json"
@@ -124,7 +126,6 @@ check_binaries() {
         katana
         unfurl
         gf
-        #gitjacker
         trufflehog
         whatweb
         wafw00f
@@ -377,39 +378,58 @@ javascript_analysis() {
 ################
 # Git Analysis #
 ################
+build_git_candidates() {
+    info "Generating Git repository candidates"
+    sed 's#/$##;s#$#/.git/HEAD#' "$LIVE_HOSTS" > "$GIT_URLS"
+    success "$(count_lines "$GIT_URLS") Git URLs generated"
+}
+
 find_git_repositories() {
     info "Checking for exposed Git repositories"
-    grep -E '^https?://' "$EXPANDED_URLS" | sed 's#/$##' | sort -u | xargs -P 20 -I{} sh -c 'curl -sk "{}"/.git/HEAD | grep -q "refs/heads" && echo "{}"' > "$GIT_CANDIDATES"
+    : > "$GIT_CANDIDATES"
+    httpx -silent -json -mc 200 -mr "ref: refs/heads/" -l "$GIT_URLS" > "$GIT_JSON" || true
+    jq -r '.url // empty' "$GIT_JSON" 2>/dev/null | sed 's#/.git/HEAD$##' | sort -u > "$GIT_CANDIDATES"
+
     success "$(count_lines "$GIT_CANDIDATES") Git repositories discovered"
 }
 
 dump_git_repositories() {
     info "Dumping repositories"
     : > "$GIT_REPOS"
-    while read -r repo; do
-        name=$(echo "$repo" | sed 's#https\?://##;s#[/:]#_#g')
-        python3 "$GIT_DUMPER" "$repo/.git/" "$REPOS_DIR/$name" >/dev/null 2>&1 &&
-        echo "$REPOS_DIR/$name" >> "$GIT_REPOS"
+    [[ -s "$GIT_CANDIDATES" ]] || {
+        warn "No Git repositories discovered"
+        return 0
+    }
+
+    while read -r repo
+    do
+        name="$(echo "$repo" | sed 's#https\?://##;s#[/:]#_#g')"
+        if python3 "$GIT_DUMPER" "${repo}/.git/" "${REPOS_DIR}/${name}" >/dev/null 2>&1
+        then
+            echo "${REPOS_DIR}/${name}" >> "$GIT_REPOS"
+        fi
     done < "$GIT_CANDIDATES"
+
     success "$(count_lines "$GIT_REPOS") repositories dumped"
 }
-
-#run_gitjacker() {
-#    while read -r repo; do
-#        gitjacker "$repo/.git/" >/dev/null 2>&1 || true
-#    done < "$GIT_CANDIDATES"
-#}
 
 scan_git_secrets() {
     info "Scanning repositories for secrets"
     : > "$GIT_SECRETS"
-    while read -r repo; do
+    [[ -s "$GIT_REPOS" ]] || {
+        warn "No repositories available for scanning"
+        return 0
+    }
+
+    while read -r repo
+    do
         trufflehog filesystem "$repo" --only-verified >> "$GIT_SECRETS" 2>/dev/null || true
     done < "$GIT_REPOS"
     success "Secret scan complete"
 }
 
 repository_analysis() {
+    build_git_candidates
     find_git_repositories
     dump_git_repositories
     scan_git_secrets
@@ -432,15 +452,18 @@ fingerprint_technologies() {
 detect_wafs() {
     info "Detecting WAFs"
     : > "$WAF_JSON"
-    while read -r host; do
-        wafw00f "$host" -f json 2>/dev/null
+    while read -r host
+    do
+        timeout 20 \
+            wafw00f "$host" -f json 2>/dev/null || true
     done < "$LIVE_HOSTS" >> "$WAF_JSON"
+
     success "WAF detection complete"
 }
 
 capture_screenshots() {
     info "Capturing screenshots"
-    gowitness scan file -f "$LIVE_HOSTS" --write-db
+    gowitness scan file -f "$LIVE_HOSTS" --write-db >/dev/null 2>&1 || true 
     success "Screenshots captured"
 }
 
@@ -457,31 +480,51 @@ asset_enrichment() {
 }
 
 
-
 ######################
 # Targeted Detection #
 ######################
 categorize_technologies() {
-    jq -r 'select(.plugins.WordPress) | .target' "$TECH_JSON" | sort -u > "$WORDPRESS_HOSTS"
-    jq -r 'select(.plugins.Joomla) | .target' "$TECH_JSON" | sort -u > "$JOOMLA_HOSTS"
-    jq -r 'select(.plugins.GraphQL) | .target' "$TECH_JSON" | sort -u > "$GRAPHQL_HOSTS"
+    : > "$WORDPRESS_HOSTS"
+    : > "$JOOMLA_HOSTS"
+    : > "$GRAPHQL_HOSTS"
+
+    if [[ ! -s "$TECH_JSON" ]]; then
+        warn "No technology data available"
+        return 0
+    fi
+
+    jq -r 'select(.plugins.WordPress) | .target // empty' "$TECH_JSON" 2>/dev/null > /tmp/wp.$$ || true
+    sort -u /tmp/wp.$$ > "$WORDPRESS_HOSTS"
+    rm -f /tmp/wp.$$
+
+    jq -r 'select(.plugins.Joomla) | .target // empty' "$TECH_JSON" 2>/dev/null > /tmp/joomla.$$ || true
+    sort -u /tmp/joomla.$$ > "$JOOMLA_HOSTS"
+    rm -f /tmp/joomla.$$
+
+    jq -r 'select(.plugins.GraphQL) | .target // empty' "$TECH_JSON" 2>/dev/null > /tmp/graphql.$$ || true
+    sort -u /tmp/graphql.$$ > "$GRAPHQL_HOSTS"
+    rm -f /tmp/graphql.$$
+
     success "Technology categorization complete"
+}
+
+find_panels() {
+    : > "$EXPOSED_PANELS"
+    grep -Ei 'admin|dashboard|jenkins|grafana|kibana|gitlab|jira|vpn' "$LIVE_HOSTS" 2>/dev/null | sort -u > "$EXPOSED_PANELS" || true
+    success "$(count_lines "$EXPOSED_PANELS") panel candidates identified"
+}
+
+find_graphql() {
+    : > "$GRAPHQL_HOSTS"
+    grep -Ei '/graphql|/graphiql|/playground' "$EXPANDED_URLS" 2>/dev/null | sort -u > "$GRAPHQL_HOSTS" || true
+    success "$(count_lines "$GRAPHQL_HOSTS") GraphQL endpoints found"
 }
 
 run_nuclei() {
     info "Running Nuclei"
-    nuclei -l "$LIVE_HOSTS" -jsonl -rl 25 -c 25 > "$NUCLEI_RESULTS"
-    success "Nuclei complete"
-}
+    nuclei -silent -jsonl -rl 25 -c 25 -l "$LIVE_HOSTS" -o "$NUCLEI_RESULTS" || warn "Nuclei encountered errors"
 
-find_panels() {
-    grep -Ei 'admin|dashboard|jenkins|grafana|kibana|gitlab|jira|vpn' "$LIVE_HOSTS" | sort -u > "$EXPOSED_PANELS"
-    success "$(count_lines "$EXPOSED_PANELS") panels identified"
-}
-
-find_graphql() {
-    grep -Ei '/graphql|/graphiql|/playground' "$EXPANDED_URLS" | sort -u > "$GRAPHQL_HOSTS"
-    success "$(count_lines "$GRAPHQL_HOSTS") GraphQL endpoints found"
+    success "$(count_lines "$NUCLEI_RESULTS") findings identified"
 }
 
 targeted_detection() {

@@ -186,6 +186,8 @@ Other Enumeration Options:
 * ASN: `asn.sh` finds IP ranges, CIDRs, and ASNs to assist in deeper enumeration.
 * APIs: `api.sh` does a more in-depth discovery for things such as openapi documentation and swagger docs.
 * Secrets: `secrets.sh` does a deeper regex-based check to pick out more specific types of secrets.
+* Subdomain Takeovers: `takeover.sh` search for possible subdomain takeovers.
+* Ports: `ports` does an initial port scan with _naabu_ then performs a more intensive scan with _nmap_.
 
 ---
 

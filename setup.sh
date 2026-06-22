@@ -64,7 +64,9 @@ touch \
     content/redirect_candidates.txt \
     content/git_candidates.txt \
     content/git_repos.txt \
-    content/git_secrets.txt
+    content/git_secrets.txt \
+    content/git_urls.txt \
+    content/git_candidates.json
 
 ####################
 # Enrichment Files #
@@ -174,6 +176,29 @@ touch \
     secrets/summary.txt
 
 
+#############
+# Takeovers #
+#############
+mkdir -p takeover
+
+touch \
+    discovery/all_subdomains.txt \
+    takeover/takeovers.txt \
+    takeover/takeovers.json
+
+
+
+#############
+# Takeovers #
+#############
+mkdir -p ports
+
+touch \
+    ports/open_ports.txt \
+    ports/open_ports.json \
+    ports/nmap.txt
+
+
 ###################
 # Success Message #
 ###################
@@ -215,6 +240,8 @@ After initial recon consider other modules
   ./asn.sh
   ./api.sh
   ./secrets.sh
+  ./takeover.sh
+  ./ports.sh
 
 =========================================
 

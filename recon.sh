@@ -167,10 +167,11 @@ normalize_scope_files() {
     info "Normalizing scope files"
     for file in "$WILDCARD_DOMAINS" "$KNOWN_SUBDOMAINS" "$OUT_OF_SCOPE"
     do
-        [[ ! -f "$file" ]] && continue
-        grep -v '^#' "$file" | sed '/^\s*$/d' | tr '[:upper:]' '[:lower:]' | sort > "${file}.tmp"
+        [[ -f "$file" ]] || touch "$file"
+        sed '/^#/d;/^[[:space:]]*$/d' "$file" | tr '[:upper:]' '[:lower:]' | sort -u > "${file}.tmp"
         mv "${file}.tmp" "$file"
-    done 
+    done
+
     success "Scope files normalized"
 }
 
@@ -215,36 +216,46 @@ enumerate_subdomains() {
 ###################
 is_out_of_scope() {
     local host="$1"
+    [[ -s "$OUT_OF_SCOPE" ]] || return 1
     while read -r pattern
-    do 
+    do
         [[ -z "$pattern" ]] && continue
-        if [[ "$pattern" == \*.* ]]
-        then 
+        if [[ "$pattern" == *'*'* ]]
+        then
             local regex
-            regex=$(printf '%s\n' "$pattern" | sed 's/\./\\./g' | sed 's/\*/.*/g')
+            regex="$(printf '%s\n' "$pattern" | sed 's/\./\\./g;s/\*/.*/g')"
             [[ "$host" =~ ^${regex}$ ]] && return 0
         else
             [[ "$host" == "$pattern" ]] && return 0
         fi
-    done  < "$OUT_OF_SCOPE"
+    done < "$OUT_OF_SCOPE"
+
     return 1
 }
 
 build_scope() {
     info "Building final scope"
-    cat "$ENUM_RESULTS" "$KNOWN_SUBDOMAINS" | sort -u > "$RAW_SUBDOMAINS"
-    : > "$FINAL_SUBDOMAINS"
-    while read -r host;
-    do 
-        [[ -z "$host" ]] && continue 
-        if ! is_out_of_scope "$host"
-        then 
-            echo "$host" >> "$FINAL_SUBDOMAINS"
-        fi 
-    done < "$RAW_SUBDOMAINS"
-    success "$(wc -l < "$FINAL_SUBDOMAINS") hosts in scope"
-}
+    cat "$ENUM_RESULTS" "$KNOWN_SUBDOMAINS" 2>/dev/null | sed '/^[[:space:]]*$/d' | sort -u > "$RAW_SUBDOMAINS"
 
+    if [[ ! -s "$OUT_OF_SCOPE" ]]
+    then
+        cp "$RAW_SUBDOMAINS" "$FINAL_SUBDOMAINS"
+        success "$(count_lines "$FINAL_SUBDOMAINS") hosts in scope"
+        return 0
+    fi
+    : > "$FINAL_SUBDOMAINS"
+
+    while read -r host
+    do
+        [[ -z "$host" ]] && continue
+        if ! is_out_of_scope "$host"
+        then
+            echo "$host" >> "$FINAL_SUBDOMAINS"
+        fi
+    done < "$RAW_SUBDOMAINS"
+
+    success "$(count_lines "$FINAL_SUBDOMAINS") hosts in scope"
+}
 
 ########################
 # Live Host Validation #

@@ -210,14 +210,7 @@ cat <<EOF
 Bug Bounty Toolkit Initialized
 =========================================
 
-Directories Created:
-
-  scope/
-  discovery/
-  content/
-  enrichment/
-  findings/
-  repos/
+Directories Created for Recon!:
 
 Populate:
 

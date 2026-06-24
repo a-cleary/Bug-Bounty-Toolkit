@@ -9,200 +9,130 @@ touch \
     notes.txt \
     credentials.txt
 
-###############
-# Directories #
-###############
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Directories
+BASE_DIR="${PWD}/recon"
+SCOPE_DIR="${PWD}/scope"
+DISCOVERY_DIR="${BASE_DIR}/discovery"
+SUBDOMAINS_DIR="${DISCOVERY_DIR}/subdomain_enumeration"
+URLS_DIR="${DISCOVERY_DIR}/url_enumeration"
+CONTENT_DIR="${BASE_DIR}/content"
+CANDIDATES_DIR="${CONTENT_DIR}/candidates"
+JS_DIR="${CONTENT_DIR}/javascript"
+JS_RECON_DIR="${JS_DIR}/recon"
+GIT_DIR="${CONTENT_DIR}/git"
+INVENTORY_DIR="${BASE_DIR}/inventory"
+SCREENSHOT_DIR="${INVENTORY_DIR}/screenshots"
+INFRASTRUCTURE_DIR="${BASE_DIR}/infrastructure"
+DNS_DIR="${INFRASTRUCTURE_DIR}/dns"
+PORTS_DIR="${INFRASTRUCTURE_DIR}/ports"
 
 mkdir -p \
-    scope \
-    discovery \
-    content \
-    enrichment \
-    findings \
-    repos \
+"$BASE_DIR" \
+"$SCOPE_DIR" \
+"$DISCOVERY_DIR" \
+"$SUBDOMAINS_DIR" \
+"$URLS_DIR" \
+"$CONTENT_DIR" \
+"$CANDIDATES_DIR" \
+"$JS_DIR" \
+"$JS_RECON_DIR" \
+"$GIT_DIR" \
+"$INVENTORY_DIR" \
+"$SCREENSHOT_DIR" \
+"$INFRASTRUCTURE_DIR" \
+"$DNS_DIR" \
+"$PORTS_DIR"
 
-###############
-# Scope Files #
-###############
-
-touch \
-    scope/wildcard_domains.txt \
-    scope/known_subdomains.txt \
-    scope/out_of_scope.txt
-
-###################
-# Discovery Files #
-###################
-
-touch \
-    discovery/enum_results.txt \
-    discovery/subdomains_raw.txt \
-    discovery/subdomains.txt \
-    discovery/live_hosts.txt \
-    discovery/live_hosts.json
-
-#################
-# Content Files #
-#################
-
-touch \
-    content/gau.txt \
-    content/waybackurls.txt \
-    content/historical_urls.txt \
-    content/katana_urls.txt \
-    content/all_urls.txt \
-    content/expanded_urls.txt \
-    content/params.txt \
-    content/js_files.txt \
-    content/js_endpoints.txt \
-    content/js_secrets.txt \
-    content/linkfinder_raw.txt \
-    content/secretfinder_raw.txt \
-    content/xss_candidates.txt \
-    content/sqli_candidates.txt \
-    content/ssrf_candidates.txt \
-    content/redirect_candidates.txt \
-    content/git_candidates.txt \
-    content/git_repos.txt \
-    content/git_secrets.txt \
-    content/git_urls.txt \
-    content/git_candidates.json
-
-####################
-# Enrichment Files #
-####################
-
-mkdir -p enrichment/screenshots
+# Files
+WILDCARD_DOMAINS="${SCOPE_DIR}/wildcard_domains.txt"
+KNOWN_SUBDOMAINS="${SCOPE_DIR}/known_subdomains.txt"
+OUT_OF_SCOPE="${SCOPE_DIR}/out_of_scope.txt"
+ENUM_RESULTS="${SUBDOMAINS_DIR}/subdomains.txt"
+RAW_SUBDOMAINS="${SUBDOMAINS_DIR}/subdomains_raw.txt"
+FINAL_SUBDOMAINS="${SUBDOMAINS_DIR}/all_subdomains.txt"
+LIVE_HOSTS="${BASE_DIR}/live_hosts.txt"
+HTTPX_JSON="${DISCOVERY_DIR}/live_hosts.json"
+GAU_URLS="${URLS_DIR}/historical_urls.txt"
+KATANA_URLS="${URLS_DIR}/katana_urls.txt"
+ALL_URLS="${BASE_DIR}/all_urls.txt"
+PARAMS="${CONTENT_DIR}/params.txt"
+XSS_CANDIDATES="${CANDIDATES_DIR}/xss_candidates.txt"
+SQLI_CANDIDATES="${CANDIDATES_DIR}/sqli_candidates.txt"
+SSRF_CANDIDATES="${CANDIDATES_DIR}/ssrf_candidates.txt"
+REDIRECT_CANDIDATES="${CANDIDATES_DIR}/redirect_candidates.txt"
+JS_FILES="${JS_DIR}/js_files.txt"
+JS_SECRETS="${JS_DIR}/js_secrets.txt"
+JS_ENDPOINTS="${JS_DIR}/js_endpoints.txt"
+LINKFINDER_RAW="${JS_RECON_DIR}/linkfinder.txt"
+SECRETFINDER_RAW="${JS_RECON_DIR}/secretfinder.txt"
+EXPANDED_URLS="${BASE_DIR}/expanded_js.txt"
+GIT_CANDIDATES="${GIT_DIR}/candidates.txt"
+GIT_REPOS="${GIT_DIR}/repos.txt"
+GIT_SECRETS="${GIT_DIR}/secrets.txt"
+INVENTORY_ALIVE="${INVENTORY_DIR}/alive.tsv"
+INVENTORY_TECH="${INVENTORY_DIR}/tech_stack.txt"
+INVENTORY_WAF="${INVENTORY_DIR}/wafs.txt"
+INVENTORY_WAF_HOSTS="${INVENTORY_DIR}/waf_protected_hosts.txt"
+INVENTORY_INTERESTING="${INVENTORY_DIR}/interesting_hosts.txt"
+NUCLEI_RESULTS="${BASE_DIR}/nuclei.jsonl"
+MX_RECORDS="${DNS_DIR}/mx.txt"
+TXT_RECORDS="${DNS_DIR}/txt.txt"
+NS_RECORDS="${DNS_DIR}/ns.txt"
+CAA_RECORDS="${DNS_DIR}/caa.txt"
+TAKEOVER_RESULTS="${INFRASTRUCTURE_DIR}/takeovers.txt"
+OPEN_PORTS="${PORTS_DIR}/open_ports.txt"
+OPEN_PORTS_JSON="${PORTS_DIR}/open_ports.json"
+NAABU_TARGETS="${PORTS_DIR}/naabu_targets.txt"
+NMAP_RESULTS="${PORTS_DIR}/nmap.txt"
 
 touch \
-    enrichment/technologies.json \
-    enrichment/waf.json \
-    enrichment/interesting_hosts.txt
+"$WILDCARD_DOMAINS" \
+"$KNOWN_SUBDOMAINS" \
+"$OUT_OF_SCOPE" \
+"$ENUM_RESULTS" \
+"$RAW_SUBDOMAINS" \
+"$FINAL_SUBDOMAINS" \
+"$LIVE_HOSTS" \
+"$HTTPX_JSON" \
+"$GAU_URLS" \
+"$KATANA_URLS" \
+"$ALL_URLS" \
+"$PARAMS" \
+"$XSS_CANDIDATES" \
+"$SQLI_CANDIDATES" \
+"$SSRF_CANDIDATES" \
+"$REDIRECT_CANDIDATES" \
+"$JS_FILES" \
+"$JS_SECRETS" \
+"$JS_ENDPOINTS" \
+"$LINKFINDER_RAW" \
+"$SECRETFINDER_RAW" \
+"$EXPANDED_URLS" \
+"$GIT_CANDIDATES" \
+"$GIT_REPOS" \
+"$GIT_SECRETS" \
+"$INVENTORY_ALIVE" \
+"$INVENTORY_TECH" \
+"$INVENTORY_WAF" \
+"$INVENTORY_WAF_HOSTS" \
+"$INVENTORY_INTERESTING" \
+"$NUCLEI_RESULTS" \
+"$MX_RECORDS" \
+"$TXT_RECORDS" \
+"$NS_RECORDS" \
+"$CAA_RECORDS" \
+"$TAKEOVER_RESULTS" \
+"$OPEN_PORTS" \
+"$OPEN_PORTS_JSON" \
+"$NAABU_TARGETS" \
+"$NMAP_RESULTS" \
+"notes.txt" \
+"credentials.txt"
 
-##################
-# Findings Files #
-##################
-
-touch \
-    findings/nuclei.jsonl \
-    findings/wordpress.txt \
-    findings/joomla.txt \
-    findings/graphql.txt \
-    findings/exposed_panels.txt
-
-############################
-# Cloud and Infrastructure #
-############################
-mkdir -p \
-    cloud/aws \
-    cloud/azure \
-    cloud/gcp \
-    infrastructure/dns \
-    infrastructure/email \
-    infrastructure/asn \
-    infrastructure/identity \
-    infrastructure/developer \
-    infrastructure/monitoring
-
-touch \
-    cloud/cloud_assets.txt \
-    cloud/storage.txt \
-    cloud/aws/aws.txt \
-    cloud/azure/azure.txt \
-    cloud/gcp/gcp.txt
-
-touch \
-    infrastructure/dns/mx.txt \
-    infrastructure/dns/txt.txt \
-    infrastructure/dns/ns.txt \
-    infrastructure/dns/caa.txt
-
-touch \
-    infrastructure/email/spf.txt \
-    infrastructure/email/dmarc.txt
-
-touch \
-    infrastructure/asn/asn.txt \
-    infrastructure/asn/netblocks.txt
-
-touch \
-    infrastructure/identity/identity.txt \
-    infrastructure/developer/developer_tools.txt \
-    infrastructure/monitoring/monitoring.txt
-
-
-#############
-# ASN Files #
-#############
-mkdir -p asn
-
-touch \
-    asn/ips.txt \
-    asn/asns.txt \
-    asn/netblocks.txt \
-    asn/ptr.txt \
-    asn/discovered_hosts.txt \
-    asn/interesting_hosts.txt \
-    asn/live_hosts.txt
-
-
-#############
-# API Files #
-#############
-mkdir -p api
-
-touch \
-    api/graphql.txt \
-    api/swagger.txt \
-    api/openapi.txt \
-    api/postman.txt \
-    api/api_hosts.txt \
-    api/endpoints.txt \
-    api/live_endpoints.txt
-
-
-#################
-# Secrets Files #
-#################
-mkdir -p secrets
-
-touch \
-    secrets/aws.txt \
-    secrets/github.txt \
-    secrets/slack.txt \
-    secrets/jwt.txt \
-    secrets/generic.txt \
-    secrets/urls.txt \
-    secrets/summary.txt
-
-
-#############
-# Takeovers #
-#############
-mkdir -p takeover
-
-touch \
-    discovery/all_subdomains.txt \
-    takeover/takeovers.txt \
-    takeover/takeovers.json
-
-
-
-#############
-# Takeovers #
-#############
-mkdir -p ports
-
-touch \
-    ports/naabu_targets.txt \
-    ports/open_ports.txt \
-    ports/open_ports.json \
-    ports/nmap.txt
-
-
-###################
-# Success Message #
-###################
+echo "[+] Recon workspace initialized at: $BASE_DIR"
 
 cat <<EOF
 
@@ -226,8 +156,6 @@ Information Files for Convinience:
 Then run:
 
   ./recon.sh
-
-After initial recon consider modules/ for more specific recon tasks
 
 =========================================
 

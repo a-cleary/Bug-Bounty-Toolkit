@@ -192,7 +192,7 @@ validate_hosts() {
 # Content discovery
 collect_historical() {
     info "Collecting historical URLs"
-    gau --threads 20 < "$LIVE_HOSTS" > sed '/^\s*$/d' | sort -u > "$GAU_URLS"
+    gau --threads 20 < "$LIVE_HOSTS" | sed '/^\s*$/d' | sort -u > "$GAU_URLS"
     success "$(wc -l < "$GAU_URLS") historical URLs collected"
 }
 

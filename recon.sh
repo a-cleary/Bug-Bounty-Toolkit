@@ -391,7 +391,10 @@ dns_records() {
 
 find_takeovers() {
     info "Checking for subdomain takeovers"
-    subjack -w "$FINAL_SUBDOMAINS" -t 100 -timeout 30 -ssl -v -o "$TAKEOVER_RESULTS" 2>/dev/null || true
+    : > "$TAKEOVER_RESULTS"
+    subjack -w "$FINAL_SUBDOMAINS" -t 100 -timeout 30 -ssl -o "$TAKEOVER_RESULTS" 2>/dev/null || true
+    grep -vi "not vulnerable" "$TAKEOVER_RESULTS" > "${TAKEOVER_RESULTS}.tmp" 2>/dev/null || true
+    mv "${TAKEOVER_RESULTS}.tmp" "$TAKEOVER_RESULTS" 2>/dev/null || true
     success "$(count_lines "$TAKEOVER_RESULTS") potential takeovers identified"
 }
 

@@ -27,7 +27,7 @@ GIT_DIR="${CONTENT_DIR}/git"
 INVENTORY_DIR="${BASE_DIR}/inventory"
 SCREENSHOT_DIR="${INVENTORY_DIR}/screenshots"
 INFRASTRUCTURE_DIR="${BASE_DIR}/infrastructure"
-DNS_DIR="${INFRASTRUCTURE_DIR}/dns"
+DNS_DIR="${INFRASTRUCTURE_DIR}/dns"     
 PORTS_DIR="${INFRASTRUCTURE_DIR}/ports"
 
 WILDCARD_DOMAINS="${SCOPE_DIR}/wildcard_domains.txt"
@@ -46,7 +46,7 @@ XSS_CANDIDATES="${CANDIDATES_DIR}/xss_candidates.txt"
 SQLI_CANDIDATES="${CANDIDATES_DIR}/sqli_candidates.txt"
 SSRF_CANDIDATES="${CANDIDATES_DIR}/ssrf_candidates.txt"
 REDIRECT_CANDIDATES="${CANDIDATES_DIR}/redirect_candidates.txt"
-JS_FILEs="${JS_DIR}/js_files.txt"
+JS_FILES="${JS_DIR}/js_files.txt"
 JS_SECRETS="${JS_DIR}/js_secrets.txt"
 JS_ENDPOINTS="${JS_DIR}/js_endpoints.txt"
 LINKFINDER_RAW="${JS_RECON_DIR}/linkfinder.txt"
@@ -84,12 +84,25 @@ info() { printf '%b[%s INFO]%b %s\n' "$BLUE" "$(timestamp)" "$NC" "$1"; }
 success() { printf '%b[%s   OK]%b %s\n' "$GREEN" "$(timestamp)" "$NC" "$1"; }
 warn() { printf '%b[%s WARN]%b %s\n' "$YELLOW" "$(timestamp)" "$NC" "$1"; }
 error() { printf '%b[%s FAIL]%b %s\n' "$RED" "$(timestamp)" "$NC" "$1"; }
+count_lines() { [[ -f "$1" ]] && wc -l < "$1" || echo 0; }
 
 
 ##### PASSIVE RECON #####
 # Subdomain discovery
+normalize_scope_files() {
+    info "Normalizing scope files"
+    for file in "$WILDCARD_DOMAINS" "$KNOWN_SUBDOMAINS" "$OUT_OF_SCOPE"
+    do
+        [[ -f "$file" ]] || touch "$file"
+        sed '/^#/d;/^[[:space:]]*$/d' "$file" | tr '[:upper:]' '[:lower:]' | sort -u > "${file}.tmp"
+        mv "${file}.tmp" "$file"
+    done
+    success "Scope files normalized"
+}
+
 enumerate_domain() {
     local domain="$1"
+
     local tmpdir
     tmpdir="$(mktemp -d)"
 
@@ -97,7 +110,7 @@ enumerate_domain() {
     assetfinder --subs-only "$domain" > "${tmpdir}/assetfinder.txt" 2>/dev/null &
     amass enum -d "$domain" > "${tmpdir}/amass.txt" 2>/dev/null &
     (
-        curl -s "https://crt.sh/?q=%25.${domain}&output=json" |
+        curl -s "https://crt.sh/?q=%25.${domain}&output=json" | 
         jq -r '.[].name_value' 2>/dev/null |
         tr '\r' '\n' |
         sed 's/\*\.//g' |
@@ -105,13 +118,13 @@ enumerate_domain() {
     ) > "${tmpdir}/crtsh.txt" &
 
     wait
-    cat "${tmpdir}/*.txt" 2>/dev/null | sort -u
+    cat "$tmpdir"/*.txt 2>/dev/null | sort -u
     rm -rf "$tmpdir"
 }
 export -f enumerate_domain
 
 enumerate_subdomains() {
-    info "Starting passive subdomain enumeration"
+    info "Starting passive enumeration"
     : > "$ENUM_RESULTS"
     xargs -a "$WILDCARD_DOMAINS" -P "$MAX_PARALLEL_DOMAINS" -I{} bash -c 'enumerate_domain "$@"' _ {} >> "$ENUM_RESULTS"
     sort -u "$ENUM_RESULTS" -o "$ENUM_RESULTS"
@@ -424,6 +437,7 @@ run_nuclei() {
 }
 
 main() {
+    normalize_scope_files
     enumerate_subdomains
     build_scope
     validate_hosts

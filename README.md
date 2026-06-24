@@ -6,6 +6,16 @@ The toolkit follows a structured workflow, allowing researchers to build a progr
 
 ---
 
+## TODO
+
+- [ ] Clean up and aggregate data
+- [ ] Combine found information into an easily digestible format 
+- [ ] Remove duplicate steps (httpx does a lot - no need to search for various items several times)
+- [ ] Make output look nicer
+- [ ] Better search ability (JSON with jq is powerful - use it)
+
+---
+
 ## Features
 
 ### Asset Discovery

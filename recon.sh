@@ -353,7 +353,13 @@ run_linkfinder() {
 run_secretfinder() {
     info "Running SecretFinder"
     : > "$SECRETFINDER_RAW"
-    xargs -a "$JS_FILES" \
+    [[ -s "$JS_FILES" ]] || {
+        warn "No JavaScript files available"
+        return 0
+    }
+
+    tr '\n' '\0' < "$JS_FILES" |
+    xargs -0 \
         -P "${MAX_JS_WORKERS:-5}" \
         -I{} \
         python3 "$SECRETFINDER" -i "{}" -o cli \

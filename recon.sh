@@ -435,7 +435,7 @@ infrastructure_recon() {
 ##### VULNERABILITY SCANNING #####
 run_nuclei() {
     info "Running Nuclei"
-    nuclei -silent -jsonl -rl 25 -c 25 -l "$LIVE_HOSTS" -o "$NUCLEI_RESULTS" || warn "Nuclei encountered errors"
+    nuclei -silent -jsonl -rl 25 -c 25 -l "$LIVE_HOSTS" -o "$NUCLEI_RESULTS" >/dev/null 2>&1 || warn "Nuclei encountered errors"
     success "$(count_lines "$NUCLEI_RESULTS") findings identified"
 }
 

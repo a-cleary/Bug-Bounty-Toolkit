@@ -48,37 +48,32 @@ build_execution_plan() {
 }
 
 run_pipeline() {
-    local INDEX=0
-    for MODULE in "${EXECUTION_PLAN[@]}"
+    for MODULE_PATH in "${EXECUTION_PLAN[@]}"
     do
-        INDEX=$((INDEX + 1))
-        local MODULE_ID
-        MODULE_ID=$(printf "%02d" "$((INDEX-1))")
-        local MODULE_FILE
-        MODULE_FILE=$(basename "$MODULE")
-        if run_module "$MODULE"
+        if ! run_module "$MODULE_PATH"
         then
-            mark_module_completed "$MODULE_FILE"
-            record_module_execution "$MODULE_FILE"
-        else
-            mark_module_failed "$MODULE_FILE"
             return 1
         fi
     done
 
     generate_artifact_index
+    return 0
 }
 
 run_module() {
-    local MODULE_FILE="$1"
+    local MODULE_PATH="$1"
+    local MODULE_FILE
+
+    MODULE_FILE="$(basename "$MODULE_PATH")"
+
     local MODULE_ID
-    MODULE_ID=$(basename "$MODULE_FILE" | cut -d'_' -f1)
+    MODULE_ID=$(echo "$MODULE_FILE" | cut -d'_' -f1)
 
     unset MODULE_NAME
     unset MODULE_DESCRIPTION
     unset MODULE_OUTPUTS
 
-    source "$MODULE_FILE"
+    source "$MODULE_PATH"
 
     if [[ -z "${MODULE_NAME:-}" ]]
     then
@@ -92,6 +87,13 @@ run_module() {
     export CURRENT_MODULE_NAME="$DISPLAY_NAME"
 
     set_module_context "$MODULE_ID" "$DISPLAY_NAME"
+
+    if [[ "${RESUME:-false}" == true ]] && is_module_completed "$MODULE_FILE"
+    then
+        log_info "Skipping (already completed)"
+        return 0
+    fi
+
     log_info "Starting"
     mark_module_started "$MODULE_FILE"
 

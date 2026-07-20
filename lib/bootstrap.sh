@@ -16,7 +16,6 @@ source "$FRAMEWORK_DIR/lib/scope.sh"
 source "$FRAMEWORK_DIR/lib/scheduler.sh"
 source "$FRAMEWORK_DIR/lib/metadata.sh"
 source "$FRAMEWORK_DIR/lib/validate.sh"
-source "$FRAMEWORK_DIR/lib/cli.sh"
 
 initialize_logger
 initialize_state

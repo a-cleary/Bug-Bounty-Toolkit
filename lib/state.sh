@@ -4,17 +4,18 @@ STATE_FILE="$WORK_DIR/state/modules.json"
 
 initialize_state() {
     mkdir -p "$WORK_DIR/state"
-    if [[ ! -f "$STATE_FILE" ]]
+    if [[ "${RESUME:-false}" == true && -f "$STATE_FILE" ]]
     then
-        cat > "$STATE_FILE" <<EOF
+        return
+    fi
+    cat > "$STATE_FILE" <<EOF
 {
     "modules": {}
 }
 EOF
-    fi
 }
 
-module_completed() {
+is_module_completed() {
     local MODULE="$1"
     jq -e --arg mod "$MODULE" '.modules[$mod].status == "completed"' "$STATE_FILE" >/dev/null 2>&1
 }

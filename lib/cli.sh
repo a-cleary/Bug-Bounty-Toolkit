@@ -5,20 +5,18 @@ ONLY_MODULE=""
 SKIP_MODULES=()
 RESUME=false
 DRY_RUN=false
-VERBOSE=false
 
 usage() {
+    local PROG
+    PROG="$(basename "$0")"
     cat <<EOF
 
 Usage:
 
-$0 [options]
+${PROG} [options]
 
 
 Options:
-
-    --config <file>
-        Custom configuration file
 
     --resume
         Resume previously completed modules
@@ -32,24 +30,19 @@ Options:
     --dry-run
         Build and display the execution plan without running modules
 
-    --verbose
-        Enable verbose logging
-
     -h, --help
         Show this help message
 
 
 Examples:
 
-    $0
+    ${PROG}
 
-    $0 --resume
+    ${PROG} --resume
 
-    $0 --only HTTP
+    ${PROG} --only HTTP
 
-    $0 --skip NUCLEI
-
-    $0 --scope /home/user/Targets/example/scope
+    ${PROG} --skip NUCLEI
 
 EOF
 }
@@ -58,15 +51,6 @@ parse_args() {
     while [[ $# -gt 0 ]]
     do
         case "$1" in
-            --config)
-                [[ $# -ge 2 ]] || {
-                    echo "Missing argument for --config"
-                    exit 1
-                }
-                CONFIG_FILE_OVERRIDE="$2"
-                shift 2
-                ;;
-
             --resume)
                 RESUME=true
                 shift
@@ -95,11 +79,6 @@ parse_args() {
                 shift
                 ;;
 
-            --verbose)
-                VERBOSE=true
-                shift
-                ;;
-
             -h|--help)
                 usage
                 exit 0
@@ -119,5 +98,4 @@ parse_args() {
     export ONLY_MODULE
     export RESUME
     export DRY_RUN
-    export VERBOSE
 }

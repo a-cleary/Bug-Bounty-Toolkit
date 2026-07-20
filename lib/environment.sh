@@ -61,7 +61,7 @@ EOF
 # *.example.com
 EOF
 
-    cat > "$WORK_DIR    /scope/out_of_scope.txt" <<EOF
+    cat > "$WORK_DIR/scope/out_of_scope.txt" <<EOF
 # Excluded assets
 #
 # Example:

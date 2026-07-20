@@ -27,14 +27,33 @@ build_execution_plan() {
     do
         local NAME
         NAME=$(basename "$MODULE")
+        local MODULE_NAME
+        MODULE_NAME=$(echo "$NAME" | cut -d'_' -f2 | sed 's/.sh//' | tr '[:lower:]' '[:upper:]')
+
         if [[ -n "${ONLY_MODULE:-}" ]]
         then
-            if [[ "$NAME" != "$ONLY_MODULE" ]]
+            if [[ "$MODULE_NAME" != "$ONLY_MODULE" ]]
             then
                 continue
             fi
         fi
 
+        local SKIP=false
+
+        for SKIPPED in "${SKIP_MODULES[@]:-}"
+        do
+            if [[ "$MODULE_NAME" == "$SKIPPED" ]]
+            then
+                SKIP=true
+                break
+            fi
+        done
+
+        if [[ "$SKIP" == true ]]
+        then
+            log_info "Skipping module: $MODULE_NAME"
+            continue
+        fi
         EXECUTION_PLAN+=("$MODULE")
     done
 
